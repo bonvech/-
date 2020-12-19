@@ -1,4 +1,3 @@
-// Arseniy version 10.12.2020
 #include <stdio.h>
 #include <TXLib.h>
 
@@ -11,8 +10,6 @@ struct Map
     Map();
     ~Map();
     void Draw();
-    int  Get_cell(int x, int y);
-    void Set_cell(int x, int y, int type);
 };
 
 
@@ -31,7 +28,6 @@ struct Character
     void Left(Map &location);
     void Draw();
 };
-
 
 
 int main()
@@ -58,20 +54,6 @@ int main()
         if (GetAsyncKeyState (0x41))
             Girl.Left(location);
 
-        if(location.Get_cell(Girl.x, Girl.y) == 2 && GetAsyncKeyState(0x45))
-        {
-            location.Set_cell(Girl.x, Girl.y, 1);
-            Girl.point += 1;
-        }
-        if(Girl.point == 5)
-        {
-            location.Set_cell(600, 560, 1);
-        }
-        if(Girl.point == 5 && location.Get_cell(Girl.x, Girl.y) == 3)
-        {
-             const int finish = txMessageBox("Я хочу пиццу");
-             return 0;
-        }
         location.Draw();
         Girl.Draw();
         txSleep(100);
@@ -80,7 +62,6 @@ int main()
 
     return 0;
 }
-
 
 
 Character::Character()
@@ -107,7 +88,8 @@ void Character::Up(Map &location)
 {
      if(y <= 40)
         return;
-    if(location.Get_cell(x, y - dy) != 0)
+
+    if(txGetPixel(x, y - dy) != RGB(192, 192, 192))
     {
         y -= dy;
         b = b0 * 3 + 1;
@@ -123,7 +105,8 @@ void Character::Down(Map &location)
 {
     if(y >= 570)
         return;
-    if(location.Get_cell(x, y + dy) != 0)
+    txRectangle(700, 600, x + 100, y + 100);
+    if(txGetPixel(x, y + dy) != RGB(192, 192, 192))
     {
         y += dy;
         b = b0 * 0;
@@ -138,7 +121,7 @@ void Character::Right(Map &location)
 {
     if(x >= 680)
         return;
-    if(location.Get_cell(x + dx, y) != 0)
+    if(txGetPixel(x + dx, y) != RGB(192, 192, 192))
     {
         x += dx;
         b = b0 * 2;
@@ -153,7 +136,7 @@ void Character::Left(Map &location)
 {
     if(x <= 20)
         return;
-    if(location.Get_cell(x - dx, y) != 0)
+    if(txGetPixel(x - dx, y) != RGB(192, 192, 192))
     {
         x -= dx;
         b = b0 * 1;
@@ -179,15 +162,15 @@ Map::Map()
 {
     n = 9;
     m = 11;
-    int l[9][11] = {{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                    {1, 1, 0, 0, 0, 0, 1, 2, 1, 0, 0},
-                    {0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0},
-                    {0, 2, 0, 0, 1, 0, 1, 0, 1, 0, 0},
-                    {0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0},
-                    {0, 1, 2, 1, 1, 0, 1, 0, 1, 0, 0},
-                    {0, 1, 0, 0, 1, 0, 2, 0, 1, 0, 0},
-                    {0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0},
-                    {0, 1, 1, 1, 2, 0, 0, 0, 1, 0, 3}};
+    int l[9][11] = {{1, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2},
+                    {1, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2},
+                    {1, 1, 0, 1, 1, 1, 1, 2, 2, 2, 2},
+                    {0, 2, 0, 2, 0, 0, 0, 2, 0, 2, 2},
+                    {2, 2, 2, 2, 2, 0, 2, 2, 0, 0, 2},
+                    {2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0},
+                    {0, 2, 2, 2, 2, 0, 0, 2, 2, 2, 0},
+                    {0, 1, 1, 1, 2, 0, 0, 1, 0, 2, 0},
+                    {0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1}};
     map_pic = txLoadImage("map_pic.bmp");
 
     int i, j;
@@ -203,34 +186,23 @@ void Map::Draw()
     {
         for(j = 0; j < m; j += 1)
         {
-            txTransparentBlt(txDC(), j*64, i*64, 64, 64, map_pic, 0, 0, TX_WHITE);
+            txSetColor(RGB (192, 192, 192));
+            txSetFillColor(RGB (192, 192, 192));
             if(loc[i][j] == 1)
             {
-                txTransparentBlt(txDC(), j*64, i*64, 64, 64, map_pic, 0, 64, TX_WHITE);
+                txSetFillColor(RGB (239, 228, 176));
+                txSetColor(RGB (239, 228, 176));
+
             }
             if(loc[i][j] == 2)
             {
-                txTransparentBlt(txDC(), j*64, i*64, 64, 64, map_pic, 64, 64, TX_WHITE);
+                txSetFillColor(RGB (153, 217, 234));
+                txSetColor(RGB (153, 217, 234));
             }
-            if(loc[i][j] == 3)
-            {
-                txTransparentBlt(txDC(), j*64, i*64, 64, 64, map_pic, 125, 64, TX_WHITE);
-            }
+
+            txRectangle(j * 64, i * 64, j * 64 + 64, i * 64 + 64);
         }
     }
 
+    txSetFillColor(RGB(255, 255, 255));
 }
-
-int  Map::Get_cell(int x, int y)
-{
-    int i = x / 64;
-    int j = y / 64;
-    return loc[j][i];
-}
-
-void Map::Set_cell(int x, int y, int type)
-{
-    loc[y / 64][x / 64] = type;
-}
-
-
